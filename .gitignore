@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Virtual environments
+.venv
+venv/
+ENV/
+env/
+
+# uv
+.uv/
+__pypackages__/
+# uv.lock is committed (not ignored) because chessplaza is an executable application,
+# not a library. Users run it via `uvx chessplaza` and expect reproducible behavior.
+
+# Ruff
+.ruff_cache/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+*nogit*
+*.local.*

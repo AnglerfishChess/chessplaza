@@ -1,0 +1,61 @@
+[project]
+name = "chessplaza"
+version = "0.0.1"
+description = "Chess hustler plaza - AI chess hustlers with distinct personalities powered by Claude Agents SDK"
+authors = [
+    {name = "Alex Myodov", email = "amyodov@gmail.com"}
+]
+license = {text = "MIT License"}
+readme = "README.md"
+keywords = [
+    "chess",
+    "AI",
+    "LLM",
+    "Claude",
+    "agents",
+    "chess hustler",
+    "game",
+    "anthropic"
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Games/Entertainment :: Board Games",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent"
+]
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.40.0",
+    "chess>=1.11.2,<2.0.0",
+    "click>=8.1.8,<9.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "ruff>=0.11.4",
+    "uv-publish>=1.2",
+    "pytest-asyncio>=0.23.0",
+]
+
+[project.scripts]
+chessplaza = "chessplaza.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+packages = ["chessplaza"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
