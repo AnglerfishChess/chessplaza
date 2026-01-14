@@ -32,7 +32,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "anthropic>=0.40.0",
+    "claude-agent-sdk>=0.1.0",
     "chess>=1.11.2,<2.0.0",
     "click>=8.1.8,<9.0.0",
 ]
