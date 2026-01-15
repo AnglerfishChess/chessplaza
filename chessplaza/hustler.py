@@ -145,9 +145,10 @@ HUSTLER PROFILES (use these details accurately when describing them):
 Output format (JSON):
 {{
   "narrative": "Scene description - the park, atmosphere, what each hustler is doing",
+  "speaker": "{hustler_ids} or empty if no one speaks",
   "spoken_display": "If anyone calls out to the player, their words with personality. Empty if silent.",
   "spoken_tts": "Same words, clean grammar for TTS. Empty if silent.",
-  "next_action": "select_hustler|approach_eddie|approach_viktor|approach_mei|approach_marco"
+  "next_action": "select_hustler|{approach_actions}"
 }}
 
 Be atmospheric but concise. Generate fresh descriptions each time - maybe Viktor is mid-game with someone,
@@ -198,7 +199,14 @@ def get_park_prompt(language: str = "English") -> str:
     hustler_profiles = "\n\n".join(
         f"--- {h.name} ---\n{h.prompt}" for h in HUSTLERS.values()
     )
-    base = PARK_PROMPT.format(hustler_profiles=hustler_profiles)
+    hustler_ids = "|".join(HUSTLERS.keys())
+    approach_actions = "|".join(f"approach_{h_id}" for h_id in HUSTLERS.keys())
+
+    base = PARK_PROMPT.format(
+        hustler_profiles=hustler_profiles,
+        hustler_ids=hustler_ids,
+        approach_actions=approach_actions,
+    )
 
     language_instruction = ""
     if language.lower() != "english":

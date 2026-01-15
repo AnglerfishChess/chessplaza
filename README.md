@@ -38,8 +38,8 @@ uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza
 
 With options:
 ```bash
-# With text-to-speech
-uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza --voice
+# With text-to-speech (requires [voice] extras)
+uvx --from "git+https://github.com/AnglerfishChess/chessplaza[voice]" chessplaza --voice
 
 # In a different language
 uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza --language portuguese
@@ -49,6 +49,9 @@ uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza --langua
 
 ```bash
 uvx chessplaza
+
+# With text-to-speech
+uvx "chessplaza[voice]" --voice
 ```
 
 ### From source
@@ -64,8 +67,8 @@ uv run chessplaza
 # Or install in development mode
 uv venv --python python3.10
 source .venv/bin/activate
-uv pip install -e ".[dev]"
-chessplaza
+uv pip install -e ".[dev,voice]"
+chessplaza --voice
 ```
 
 ## Related Projects

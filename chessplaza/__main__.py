@@ -202,6 +202,12 @@ async def _display_response(response: dict, voice_enabled: bool, hustler: Hustle
     narrative = response.get("narrative", "")
     spoken_display = response.get("spoken_display", "")
     spoken_tts = response.get("spoken_tts", "")
+    speaker_id = response.get("speaker", "")
+
+    # Determine who is speaking (for voice and display)
+    speaker = hustler
+    if not speaker and speaker_id and speaker_id in HUSTLERS:
+        speaker = HUSTLERS[speaker_id]
 
     # Print narrative in dim/italic
     if narrative:
@@ -209,15 +215,14 @@ async def _display_response(response: dict, voice_enabled: bool, hustler: Hustle
 
     # Print spoken words
     if spoken_display:
-        if hustler:
-            click.secho(f"{hustler.name}: ", fg="green", bold=True, nl=False)
+        if speaker:
+            click.secho(f"{speaker.name}: ", fg="green", bold=True, nl=False)
         click.echo(spoken_display)
 
-    # Speak if voice enabled (lazy import - optional dependency)
-    if voice_enabled and spoken_tts:
+    # Speak if voice enabled and a hustler is speaking (not narrator)
+    if voice_enabled and spoken_tts and speaker:
         from chessplaza.voice import speak
-        voice_id = hustler.voice if hustler else "en-US-GuyNeural"
-        await speak(spoken_tts, voice_id)
+        await speak(spoken_tts, speaker.voice)
 
 
 def _is_leaving_park(text: str) -> bool:
