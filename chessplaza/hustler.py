@@ -142,17 +142,21 @@ Your job:
 HUSTLER PROFILES (use these details accurately when describing them):
 {hustler_profiles}
 
-Output format (JSON):
+CRITICAL: You must respond ONLY with valid JSON in this exact format - no other text:
 {{
-  "narrative": "Scene description - the park, atmosphere, what each hustler is doing",
-  "speaker": "{hustler_ids} or empty if no one speaks",
-  "spoken_display": "If anyone calls out to the player, their words with personality. Empty if silent.",
-  "spoken_tts": "Same words, clean grammar for TTS. Empty if silent.",
+  "narrative": "Scene description - the park, atmosphere, what each hustler is doing. NO MARKDOWN.",
+  "speaker": "{hustler_ids} or empty string if no one speaks",
+  "spoken_display": "If anyone calls out to the player, their words with personality. Empty string if silent.",
+  "spoken_tts": "Same words, clean grammar for TTS. Empty string if silent.",
   "next_action": "select_hustler|{approach_actions}"
 }}
 
-Be atmospheric but concise. Generate fresh descriptions each time - maybe Viktor is mid-game with someone,
-maybe Marco is arguing, maybe Mei is alone staring at a puzzle. Make the park feel alive."""
+Rules:
+- Output ONLY the JSON object, nothing else before or after
+- No markdown formatting (no *, **, _, etc.) - use plain text only
+- Be atmospheric but concise in the narrative
+- Generate fresh descriptions each time - maybe Viktor is mid-game, Marco arguing, Mei alone with a puzzle
+- Make the park feel alive"""
 
 
 # --- Structured output instructions (appended to all prompts) ---

@@ -9,8 +9,10 @@ Supports running via:
 
 import asyncio
 import json
+import random
 
 import click
+
 from claude_agent_sdk import AssistantMessage, ClaudeAgentOptions, ClaudeSDKClient, TextBlock
 
 from chessplaza import __version__
@@ -20,6 +22,9 @@ from chessplaza.hustler import (
     get_hustler_prompt,
     get_park_prompt,
 )
+
+# Track if we've shown the interaction hint
+_hint_shown: bool = False
 
 # Voice module is optional - imported lazily only when --voice is used
 # because edge-tts and miniaudio may not be installed
@@ -78,12 +83,21 @@ async def _park_phase(language: str, voice_enabled: bool) -> Hustler | None:
         allowed_tools=[],
     )
 
+    global _hint_shown
+
     # Initial park description
     async with ClaudeSDKClient(options=options) as client:
         await client.query("I just entered the park. Describe what I see.")
 
         response = await _get_response(client)
         await _display_response(response, voice_enabled, None)
+
+        # Show hint only once per session
+        if not _hint_shown:
+            random_hustler = random.choice(list(HUSTLERS.values()))
+            click.echo()
+            click.secho(f"(Just say what you want to do, e.g., \"I'll go talk to {random_hustler.name}\")", dim=True)
+            _hint_shown = True
 
         # Selection loop
         while True:
