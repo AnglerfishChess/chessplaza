@@ -2,7 +2,7 @@
 
 A virtual chess plaza with AI-powered chess hustlers, each with their own unique personality and playing style.
 
-Think of Washington Square Park in NYC, or Dupont Circle in DC – places where chess hustlers gather to play, banter, and challenge passersby. This project brings that experience to your terminal, powered by LLMs.
+Think of Washington Square Park in NYC, or Dupont Circle in DC (but not any specific, exact place!) – places where chess hustlers gather to play, banter, and challenge passersby. This project brings that experience to your terminal, powered by LLMs.
 
 ## Vision
 
@@ -30,7 +30,22 @@ Think of Washington Square Park in NYC, or Dupont Circle in DC – places where 
 
 ## Usage
 
-### Via uvx (recommended, after PyPI publish)
+### Via uvx from GitHub (latest, potentially unstable version)
+
+```bash
+uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza
+```
+
+With options:
+```bash
+# With text-to-speech
+uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza --voice
+
+# In a different language
+uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza --language portuguese
+```
+
+### Via uvx (PyPI-published releases)
 
 ```bash
 uvx chessplaza
@@ -52,14 +67,6 @@ source .venv/bin/activate
 uv pip install -e ".[dev]"
 chessplaza
 ```
-
-## Status
-
-v0.0.1 - Project scaffolding. The hustlers are setting up their tables...
-
-## License
-
-MIT License
 
 ## Related Projects
 
