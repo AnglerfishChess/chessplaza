@@ -68,11 +68,19 @@ def _get_park_time() -> dict[str, str]:
 @click.option("--language", "-l", default="English", help="Language for the experience (e.g., Russian, Spanish, Chinese)")
 @click.option("--voice", "-v", is_flag=True, help="Enable text-to-speech (requires voice extras)")
 @click.option("--use-github-deps", is_flag=True, help="Use bleeding-edge GitHub versions of dependencies instead of PyPI")
-def main(engine: str, language: str, voice: bool, use_github_deps: bool):
+@click.option("--prototype", is_flag=True, help="Run the chat game UI prototype instead of the main game")
+@click.option("--gui", is_flag=True, help="Use PySide6 GUI (only with --prototype)")
+def main(engine: str, language: str, voice: bool, use_github_deps: bool, prototype: bool, gui: bool):
     """Welcome to Chess Plaza - play against AI chess hustlers with personality.
 
     ENGINE is the path to a UCI-compatible chess engine (e.g., /usr/local/bin/stockfish).
     """
+    # Prototype mode - run the UI prototype instead of the main game
+    if prototype:
+        from chessplaza.prototype import run_prototype
+        run_prototype(gui=gui)
+        return
+
     # Voice check - lazy import because it's optional
     if voice:
         try:
