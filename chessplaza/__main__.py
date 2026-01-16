@@ -8,6 +8,7 @@ Supports running via:
 """
 
 import asyncio
+from datetime import datetime
 import json
 import random
 
@@ -16,6 +17,7 @@ import click
 from claude_agent_sdk import AssistantMessage, ClaudeAgentOptions, ClaudeSDKClient, TextBlock
 
 from chessplaza import __version__
+from chessplaza.board import create_board_mcp_server
 from chessplaza.hustler import (
     HUSTLERS,
     Hustler,
@@ -25,16 +27,52 @@ from chessplaza.hustler import (
 # Track if we've shown the interaction hint
 _hint_shown: bool = False
 
+
+def _get_park_time() -> dict[str, str]:
+    """Get current date/time info for park atmosphere.
+
+    Night hours (22:00-06:00) are treated as late evening.
+    """
+    now = datetime.now()
+
+    # Clamp night to late evening
+    hour = now.hour
+    if hour >= 22 or hour < 6:
+        time_of_day = "late evening"
+    elif hour < 9:
+        time_of_day = "early morning"
+    elif hour < 12:
+        time_of_day = "morning"
+    elif hour < 14:
+        time_of_day = "midday"
+    elif hour < 17:
+        time_of_day = "afternoon"
+    elif hour < 20:
+        time_of_day = "evening"
+    else:
+        time_of_day = "late evening"
+
+    return {
+        "date": now.strftime("%B %d"),  # e.g., "January 15"
+        "day_of_week": now.strftime("%A"),  # e.g., "Tuesday"
+        "time_of_day": time_of_day,
+    }
+
 # Voice module is optional - imported lazily only when --voice is used
 # because edge-tts and miniaudio may not be installed
 
 
 @click.command()
 @click.version_option(version=__version__, prog_name="chessplaza")
+@click.argument("engine", type=click.Path(exists=True))
 @click.option("--language", "-l", default="English", help="Language for the experience (e.g., Russian, Spanish, Chinese)")
 @click.option("--voice", "-v", is_flag=True, help="Enable text-to-speech (requires voice extras)")
-def main(language: str, voice: bool):
-    """Welcome to Chess Plaza - play against AI chess hustlers with personality."""
+@click.option("--use-github-deps", is_flag=True, help="Use bleeding-edge GitHub versions of dependencies instead of PyPI")
+def main(engine: str, language: str, voice: bool, use_github_deps: bool):
+    """Welcome to Chess Plaza - play against AI chess hustlers with personality.
+
+    ENGINE is the path to a UCI-compatible chess engine (e.g., /usr/local/bin/stockfish).
+    """
     # Voice check - lazy import because it's optional
     if voice:
         try:
@@ -46,10 +84,16 @@ def main(language: str, voice: bool):
             click.echo("Voice support not available. Install with: uv pip install -e '.[voice]'", err=True)
             return
 
-    asyncio.run(_play_loop(language, voice))
+    asyncio.run(_play_loop(engine, language, voice, use_github_deps))
 
 
-async def _play_loop(language: str, voice_enabled: bool):
+# GitHub URLs for latest development versions of dependencies
+_GITHUB_DEPS = {
+    "chess-uci-mcp": "git+https://github.com/AnglerfishChess/chess-uci-mcp",
+}
+
+
+async def _play_loop(engine_path: str, language: str, voice_enabled: bool, use_github_deps: bool = False):
     """Main game loop."""
     click.echo()
     click.secho("=== Welcome to Chess Plaza ===", fg="cyan", bold=True)
@@ -57,11 +101,46 @@ async def _play_loop(language: str, voice_enabled: bool):
 
     leave_park_text = "You leave the park. The sounds of chess fade behind you..."
 
+    # Configure chess engine MCP server
+    if use_github_deps:
+        mcp_args = ["--from", _GITHUB_DEPS["chess-uci-mcp"], "chess-uci-mcp", engine_path]
+    else:
+        mcp_args = ["chess-uci-mcp", engine_path]
+
+    mcp_servers = {
+        # External: chess engine via chess-uci-mcp
+        "chess": {
+            "type": "stdio",
+            "command": "uvx",
+            "args": mcp_args,
+        },
+        # Internal: board state via python-chess
+        "plaza": create_board_mcp_server(),
+    }
+
+    allowed_tools = [
+        # chess-uci-mcp tools (engine)
+        "mcp__chess__analyze",
+        "mcp__chess__get_best_move",
+        "mcp__chess__set_position",
+        "mcp__chess__engine_info",
+        "mcp__chess__get_engine_options",
+        "mcp__chess__set_engine_options",
+        # plaza tools (board state)
+        "mcp__plaza__new_game",
+        "mcp__plaza__make_move",
+        "mcp__plaza__get_position",
+        "mcp__plaza__get_legal_moves",
+    ]
+
     # Single client for the entire session - maintains conversation history
+    park_time = _get_park_time()
     options = ClaudeAgentOptions(
-        system_prompt=get_unified_game_prompt(language),
-        max_turns=1,
-        allowed_tools=[],
+        system_prompt=get_unified_game_prompt(language, park_time),
+        mcp_servers=mcp_servers,
+        allowed_tools=allowed_tools,
+        max_turns=10,  # More turns needed for tool use
+        max_thinking_tokens=32768,  # Allow extended thinking for chess reasoning
     )
 
     async with ClaudeSDKClient(options=options) as client:

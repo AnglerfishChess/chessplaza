@@ -21,54 +21,41 @@ Think of Washington Square Park in NYC, or Dupont Circle in DC (but not any spec
 - Speech-to-text for calling out your moves
 - Full immersive audio experience
 
-## Dependencies
+## Prerequisites
 
-- Python 3.10+
-- `uv` for package management
-- Anthropic API key (for Claude)
-- A UCI-compatible chess engine (e.g., Stockfish) via chess-uci-mcp
+- **Claude Code** authenticated ([install](https://docs.anthropic.com/en/docs/claude-code/getting-started)), or `ANTHROPIC_API_KEY` env var
+- **uv** package manager ([install](https://docs.astral.sh/uv/getting-started/installation/))
+- **Stockfish** or another UCI chess engine ([download](https://stockfishchess.org/download/))
 
 ## Usage
 
-### Via uvx from GitHub (latest, potentially unstable version)
-
 ```bash
-uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza
-```
+# Via uvx (PyPI release)
+uvx "chessplaza[voice]" /usr/local/bin/stockfish
 
-With options:
-```bash
-# With text-to-speech (requires [voice] extras)
-uvx --from "git+https://github.com/AnglerfishChess/chessplaza[voice]" chessplaza --voice
+# Via uvx (latest from GitHub)
+uvx --from "git+https://github.com/AnglerfishChess/chessplaza[voice]" chessplaza /usr/local/bin/stockfish
 
-# In a different language
-uvx --from git+https://github.com/AnglerfishChess/chessplaza chessplaza --language portuguese
-```
-
-### Via uvx (PyPI-published releases)
-
-```bash
-uvx chessplaza
-
-# With text-to-speech
-uvx "chessplaza[voice]" --voice
-```
-
-### From source
-
-```bash
-# Clone the repository
+# From source
 git clone https://github.com/AnglerfishChess/chessplaza.git
 cd chessplaza
+uv run chessplaza /usr/local/bin/stockfish
+```
 
-# Run directly
-uv run chessplaza
+Options (work with any launch method):
+- `--voice` / `-v` - enable text-to-speech
+- `--language <lang>` / `-l <lang>` - play in a different language (e.g., Spanish, Russian)
+- `--use-github-deps` - use bleeding-edge GitHub versions of dependencies (unstable, for development)
 
-# Or install in development mode
+### Development setup
+
+```bash
+git clone https://github.com/AnglerfishChess/chessplaza.git
+cd chessplaza
 uv venv --python python3.10
 source .venv/bin/activate
 uv pip install -e ".[dev,voice]"
-chessplaza --voice
+chessplaza /usr/local/bin/stockfish
 ```
 
 ## Related Projects

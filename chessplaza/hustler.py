@@ -3,6 +3,11 @@
 from dataclasses import dataclass
 
 
+def _elo_to_skill_level(elo: int) -> int:
+    """Convert ELO to Skill Level (0-20 scale)."""
+    return max(0, min(20, (elo - 1000) // 90))
+
+
 @dataclass
 class Hustler:
     """A chess hustler with personality."""
@@ -11,7 +16,9 @@ class Hustler:
     name: str
     prompt: str  # System prompt for the personality
     voice: str  # edge-tts voice ID
-    elo: int  # Target skill level for future chess engine integration
+    elo: int  # Target skill level
+    # UCI options for engine strength/style (all engines, each ignores what it doesn't support)
+    engine_options: dict[str, str]
 
 
 HUSTLERS: dict[str, Hustler] = {}
@@ -28,6 +35,16 @@ FAST_EDDIE = _register(Hustler(
     name="Fast Eddie",
     voice="en-US-GuyNeural",
     elo=1800,
+    engine_options={
+        # Stockfish
+        "UCI_LimitStrength": "true",
+        "UCI_Elo": "1800",
+        "Slow Mover": "70",  # Plays fast, doesn't overthink
+        # Lc0
+        "Temperature": "0.3",  # Some street flair
+        # Fallback
+        "Skill Level": str(_elo_to_skill_level(1800)),
+    },
     prompt="""Fast Eddie is a 60+ year old chess hustler at a park.
 
 Personality:
@@ -52,6 +69,16 @@ VIKTOR = _register(Hustler(
     name="Viktor",
     voice="en-US-ChristopherNeural",
     elo=2200,
+    engine_options={
+        # Stockfish
+        "UCI_LimitStrength": "true",
+        "UCI_Elo": "2200",
+        "Slow Mover": "150",  # Contemplative, takes his time
+        # Lc0
+        "Temperature": "0.0",  # Precise, classical, no randomness
+        # Fallback
+        "Skill Level": str(_elo_to_skill_level(2200)),
+    },
     prompt="""Viktor is a 70+ year old Russian man who plays chess at a park.
 
 Background (he never states directly, only hints):
@@ -67,7 +94,7 @@ Personality:
 - Patient with beginners, respects strong opponents
 - Sometimes stares into distance mid-conversation, lost in memory
 - Treats the pieces with almost religious respect
-- ELO about 2200 or more (he never mentions it), but assumed to be much higher in his early days 
+- ELO about 2200 or more (he never mentions it), but assumed to be much higher in his early days
 
 Keep responses measured, philosophical. 2-4 sentences unless reminiscing.""",
 ))
@@ -79,6 +106,16 @@ MEI = _register(Hustler(
     name="Mei",
     voice="en-US-AnaNeural",
     elo=2000,
+    engine_options={
+        # Stockfish
+        "UCI_LimitStrength": "true",
+        "UCI_Elo": "2000",
+        "Slow Mover": "90",  # Slightly hesitant
+        # Lc0
+        "Temperature": "0.1",  # Occasional "nervous" deviation
+        # Fallback
+        "Skill Level": str(_elo_to_skill_level(2000)),
+    },
     prompt="""Mei is a about-16-year-old Chinese-American girl who plays chess at a park.
 
 Background:
@@ -111,6 +148,16 @@ MARCO = _register(Hustler(
     name="Marco",
     voice="en-US-GuyNeural",
     elo=1500,
+    engine_options={
+        # Stockfish
+        "UCI_LimitStrength": "true",
+        "UCI_Elo": "1500",
+        "Slow Mover": "120",  # Takes time but still blunders
+        # Lc0
+        "Temperature": "0.5",  # Chaotic, "Guadalajara Defense"
+        # Fallback
+        "Skill Level": str(_elo_to_skill_level(1500)),
+    },
     prompt="""Marco is an about-22-year-old Mexican-American who plays chess at a park.
 
 Background:
@@ -130,7 +177,7 @@ Personality:
 - References his "training" and "connections" vaguely
 - Deep down insecure, overcompensates with confidence
 - Actually pretty funny if you don't take him seriously
-- real ELO about 1500, but he falsely thinks he is smarter than that 
+- real ELO about 1500, but he falsely thinks he is smarter than that
 
 Keep responses energetic, boastful, loud. 2-4 sentences, always deflecting any criticism.""",
 ))
@@ -203,17 +250,30 @@ This is like a dubbed movie - the character stays the same, just speaks {languag
     return role_instruction + hustler.prompt + language_instruction + STRUCTURED_OUTPUT_INSTRUCTIONS
 
 
-def get_unified_game_prompt(language: str = "English") -> str:
+def get_unified_game_prompt(language: str = "English", park_time: dict[str, str] | None = None) -> str:
     """Get a unified system prompt for the entire game session.
 
     This prompt includes all roles (narrator + all hustlers) so a single
     client can maintain conversation history across the entire game.
+
+    Args:
+        language: Language for the experience.
+        park_time: Dict with "date", "day_of_week", "time_of_day" for atmosphere.
     """
     hustler_profiles = "\n\n".join(
         f"--- {h.name} (id: {h.id}) ---\n{h.prompt}" for h in HUSTLERS.values()
     )
     hustler_ids = "|".join(HUSTLERS.keys())
     approach_actions = "|".join(f"approach_{h_id}" for h_id in HUSTLERS.keys())
+
+    # Generate engine options for each hustler
+    def format_options(opts: dict[str, str]) -> str:
+        return ", ".join(f'"{k}": "{v}"' for k, v in opts.items())
+
+    engine_options_section = "\n".join(
+        f"- {h.name}: {{{format_options(h.engine_options)}}}"
+        for h in HUSTLERS.values()
+    )
 
     language_instruction = ""
     if language.lower() != "english":
@@ -222,7 +282,16 @@ def get_unified_game_prompt(language: str = "English") -> str:
 LANGUAGE: Respond entirely in {language}. All characters speak {language}.
 Characters keep their personality and background, just dubbed into {language}."""
 
-    return f"""You are running Chess Plaza, a park with outdoor chess tables and colorful characters.
+    # Time context affects park atmosphere (assume NYC climate)
+    time_context = ""
+    if park_time:
+        time_context = f"""
+
+CURRENT TIME: {park_time['time_of_day']} on {park_time['day_of_week']}, {park_time['date']}
+Use this for atmosphere: season affects weather/clothing (NYC climate), time affects lighting/crowd levels,
+weekday vs weekend affects who's around. Late evening = fewer people, quieter, lamps on."""
+
+    return f"""You are running Chess Plaza, a park with outdoor chess tables and colorful characters.{time_context}
 You play MULTIPLE ROLES based on context markers in messages:
 
 [NARRATOR] - You are the omniscient narrator describing the park scene
@@ -236,10 +305,11 @@ When you see [NARRATOR], respond as the park narrator:
 - Describe the scene atmospherically
 - Show what each character is doing RIGHT NOW (generate fresh, vivid descriptions)
 - When player approaches someone, narrate the transition
+- Use line breaks (\\n) between paragraphs for readability - one paragraph per scene element or character
 
 Narrator JSON format:
 {{
-  "narrative": "Scene description. NO MARKDOWN (no *, **, _, etc.).",
+  "narrative": "Scene description with \\n between paragraphs. NO MARKDOWN (no *, **, _, etc.).",
   "speaker": "{hustler_ids} or empty string if no one speaks",
   "spoken_display": "If a character calls out, their words. Empty string if silent.",
   "spoken_tts": "Same words, clean grammar for TTS. Empty string if silent.",
@@ -254,7 +324,7 @@ When you see [TALKING TO <name>], you ARE that character:
 
 Character JSON format:
 {{
-  "narrative": "Your actions, gestures, the scene around you. NO MARKDOWN.",
+  "narrative": "Your actions, gestures, the scene. Use \\n for paragraph breaks. NO MARKDOWN.",
   "spoken_display": "What you say aloud, with your dialect/personality.",
   "spoken_tts": "Same words, clean grammar for TTS.",
   "player_intent": "continue|leaving_opponent|leaving_park|stay"
@@ -265,6 +335,54 @@ player_intent meanings:
 - "leaving_opponent": Player wants to leave YOU, go to another table
 - "leaving_park": Player wants to leave the park entirely
 - "stay": Player changed their mind about leaving
+
+=== CHESS GAMEPLAY ===
+You have access to TWO MCP tool sets:
+- mcp__plaza__* : Board state (python-chess) - validation, FEN, game status
+- mcp__chess__* : Engine (UCI) - best move calculation, analysis
+
+GAME LIFECYCLE:
+- Game starts automatically when player approaches a hustler
+- Player is ALWAYS white, hustler is ALWAYS black
+- When switching to a different hustler, call mcp__plaza__new_game to reset
+
+WHEN GAME STARTS (player just sat down):
+1. Call mcp__plaza__new_game to reset board
+2. Set engine options for this hustler using mcp__chess__set_engine_options:
+{engine_options_section}
+3. Greet the player and wait for their first move (white moves first)
+
+GAME FLOW (each player turn):
+1. Player types something (e.g., "e4", "pawn to e4", "king's pawn")
+2. YOU interpret natural language into SAN notation (e.g., "pawn to e4" -> "e4")
+3. Call mcp__plaza__make_move with SAN - it validates and returns {{valid, san, fen, game_status}}
+4. If invalid: respond in character, game continues, use returned fen
+5. If valid:
+   a. Call mcp__chess__set_position with the new FEN
+   b. Call mcp__chess__get_best_move to get YOUR move (UCI format like "e7e5")
+   c. Call mcp__plaza__make_move with that move to apply it
+   d. Announce your move in character, include fen/game_status from response
+
+CHARACTER JSON FORMAT DURING ACTIVE GAME:
+{{
+  "narrative": "Your actions, gestures. NO MARKDOWN.",
+  "spoken_display": "What you say aloud.",
+  "spoken_tts": "Clean grammar for TTS.",
+  "player_intent": "continue|leaving_opponent|leaving_park|stay",
+  "fen": "current FEN (from mcp__plaza__ response)",
+  "game_status": "ongoing|checkmate|stalemate|draw|resigned",
+  "player_move": "e4 (SAN, ONLY if valid move)",
+  "hustler_move": "e5 (SAN, ONLY if you made a move)"
+}}
+
+- If player input wasn't a move: omit player_move and hustler_move, keep fen and game_status
+- If no active game: omit ALL chess fields
+
+ANNOUNCE MOVES IN CHARACTER:
+- Eddie: "Bang! Knight to f3, baby. Your move."
+- Viktor: "Ah... Nf3. Classical response."
+- Mei: "Um... I'll play Nf3? Is that... okay?"
+- Marco: "Bam! Knight f3! That's the Guadalajara Setup, look it up!"
 
 === RULES ===
 - Output ONLY valid JSON, nothing else before or after
