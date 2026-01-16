@@ -19,8 +19,7 @@ from chessplaza import __version__
 from chessplaza.hustler import (
     HUSTLERS,
     Hustler,
-    get_hustler_prompt,
-    get_park_prompt,
+    get_unified_game_prompt,
 )
 
 # Track if we've shown the interaction hint
@@ -56,69 +55,76 @@ async def _play_loop(language: str, voice_enabled: bool):
     click.secho("=== Welcome to Chess Plaza ===", fg="cyan", bold=True)
     click.echo()
 
-    while True:
-        # Park phase - select a hustler
-        hustler = await _park_phase(language, voice_enabled)
-        if hustler is None:
-            # User wants to leave the park
-            click.secho("\nYou leave the park. The sounds of chess fade behind you...", dim=True)
-            break
+    leave_park_text = "You leave the park. The sounds of chess fade behind you..."
 
-        # Dialog phase with selected hustler
-        leave_park = await _dialog_phase(hustler, language, voice_enabled)
-        if leave_park:
-            click.secho("\nYou leave the park. The sounds of chess fade behind you...", dim=True)
-            break
-        # Otherwise, back to park to select another hustler
-
-
-async def _park_phase(language: str, voice_enabled: bool) -> Hustler | None:
-    """Park scene - describe the park and let user select a hustler.
-
-    Returns the selected Hustler, or None if user wants to leave the park.
-    """
+    # Single client for the entire session - maintains conversation history
     options = ClaudeAgentOptions(
-        system_prompt=get_park_prompt(language),
+        system_prompt=get_unified_game_prompt(language),
         max_turns=1,
         allowed_tools=[],
     )
 
+    async with ClaudeSDKClient(options=options) as client:
+        while True:
+            # Park phase - select a hustler
+            hustler = await _park_phase(client, voice_enabled)
+            if hustler is None:
+                # User wants to leave the park
+                click.secho(f"\n{leave_park_text}", dim=True)
+                break
+
+            # Dialog phase with selected hustler
+            leave_park = await _dialog_phase(client, hustler, voice_enabled)
+            if leave_park:
+                click.secho(f"\n{leave_park_text}", dim=True)
+                break
+            # Otherwise, back to park to select another hustler
+
+
+async def _park_phase(client: ClaudeSDKClient, voice_enabled: bool) -> Hustler | None:
+    """Park scene - describe the park and let user select a hustler.
+
+    Returns the selected Hustler, or None if user wants to leave the park.
+    """
     global _hint_shown
 
     # Initial park description
-    async with ClaudeSDKClient(options=options) as client:
-        await client.query("I just entered the park. Describe what I see.")
+    await client.query("[NARRATOR] I just entered the park. Describe what I see.")
 
+    response = await _get_response(client)
+    await _display_response(response, voice_enabled, None)
+
+    # Show hint only once per session
+    if not _hint_shown:
+        random_hustler_name = lambda: random.choice(list(HUSTLERS.values())).name
+        click.echo()
+        click.secho(
+            f"(Whenever your input is needed, you can just say what you going to do, "
+            f"e.g., \"I want to play with {random_hustler_name()}\", or \"I want to leave the park\").",
+            dim=True
+        )
+        _hint_shown = True
+
+    # Selection loop
+    while True:
+        user_input = click.prompt("\nYou", prompt_suffix="> ")
+
+        if _is_leaving_park(user_input):
+            return None
+
+        await client.query(f"[NARRATOR] {user_input}")
         response = await _get_response(client)
         await _display_response(response, voice_enabled, None)
 
-        # Show hint only once per session
-        if not _hint_shown:
-            random_hustler = random.choice(list(HUSTLERS.values()))
-            click.echo()
-            click.secho(f"(Just say what you want to do, e.g., \"I'll go talk to {random_hustler.name}\")", dim=True)
-            _hint_shown = True
-
-        # Selection loop
-        while True:
-            user_input = click.prompt("\nYou", prompt_suffix="> ")
-
-            if _is_leaving_park(user_input):
-                return None
-
-            await client.query(user_input)
-            response = await _get_response(client)
-            await _display_response(response, voice_enabled, None)
-
-            # Check if we're approaching someone
-            next_action = response.get("next_action", "select_hustler")
-            if next_action.startswith("approach_"):
-                hustler_id = next_action.replace("approach_", "")
-                if hustler_id in HUSTLERS:
-                    return HUSTLERS[hustler_id]
+        # Check if we're approaching someone
+        next_action = response.get("next_action", "select_hustler")
+        if next_action.startswith("approach_"):
+            hustler_id = next_action.replace("approach_", "")
+            if hustler_id in HUSTLERS:
+                return HUSTLERS[hustler_id]
 
 
-async def _dialog_phase(hustler: Hustler, language: str, voice_enabled: bool) -> bool:
+async def _dialog_phase(client: ClaudeSDKClient, hustler: Hustler, voice_enabled: bool) -> bool:
     """Dialog loop with a specific hustler.
 
     Returns True if user wants to leave the park entirely, False to go back to park.
@@ -127,56 +133,51 @@ async def _dialog_phase(hustler: Hustler, language: str, voice_enabled: bool) ->
     click.secho(f"--- Talking to {hustler.name} ---", fg="yellow", bold=True)
     click.echo()
 
-    options = ClaudeAgentOptions(
-        system_prompt=get_hustler_prompt(hustler, language),
-        max_turns=1,
-        allowed_tools=[],
-    )
+    prefix = f"[TALKING TO {hustler.name}]"
 
-    async with ClaudeSDKClient(options=options) as client:
-        # Initial greeting from the hustler
-        await client.query("Someone just sat down at your table. Greet them.")
+    # Initial greeting from the hustler
+    await client.query(f"{prefix} Someone just sat down at your table. Greet them.")
+
+    response = await _get_response(client)
+    await _display_response(response, voice_enabled, hustler)
+
+    # Dialog loop
+    while True:
+        user_input = click.prompt("\nYou", prompt_suffix="> ")
+        await client.query(f"{prefix} {user_input}")
 
         response = await _get_response(client)
         await _display_response(response, voice_enabled, hustler)
 
-        # Dialog loop
-        while True:
-            user_input = click.prompt("\nYou", prompt_suffix="> ")
-            await client.query(user_input)
+        intent = response.get("player_intent", "continue")
 
+        if intent == "leaving_park":
+            # Hustler detected user wants to leave park - confirm
+            user_confirm = click.prompt("\nYou", prompt_suffix="> ")
+            await client.query(f"{prefix} {user_confirm}")
             response = await _get_response(client)
             await _display_response(response, voice_enabled, hustler)
 
-            intent = response.get("player_intent", "continue")
+            new_intent = response.get("player_intent", "continue")
+            if new_intent == "leaving_park":
+                return True  # Leave park
+            elif new_intent == "leaving_opponent":
+                return False  # Back to park
+            # else: stay with this hustler
 
-            if intent == "leaving_park":
-                # Hustler detected user wants to leave park - confirm
-                user_confirm = click.prompt("\nYou", prompt_suffix="> ")
-                await client.query(user_confirm)
-                response = await _get_response(client)
-                await _display_response(response, voice_enabled, hustler)
+        elif intent == "leaving_opponent":
+            # Hustler detected user wants to leave this table - confirm
+            user_confirm = click.prompt("\nYou", prompt_suffix="> ")
+            await client.query(f"{prefix} {user_confirm}")
+            response = await _get_response(client)
+            await _display_response(response, voice_enabled, hustler)
 
-                new_intent = response.get("player_intent", "continue")
+            new_intent = response.get("player_intent", "continue")
+            if new_intent in ("leaving_opponent", "leaving_park"):
                 if new_intent == "leaving_park":
-                    return True  # Leave park
-                elif new_intent == "leaving_opponent":
-                    return False  # Back to park
-                # else: stay with this hustler
-
-            elif intent == "leaving_opponent":
-                # Hustler detected user wants to leave this table - confirm
-                user_confirm = click.prompt("\nYou", prompt_suffix="> ")
-                await client.query(user_confirm)
-                response = await _get_response(client)
-                await _display_response(response, voice_enabled, hustler)
-
-                new_intent = response.get("player_intent", "continue")
-                if new_intent in ("leaving_opponent", "leaving_park"):
-                    if new_intent == "leaving_park":
-                        return True
-                    return False  # Back to park
-                # else: stay with this hustler
+                    return True
+                return False  # Back to park
+            # else: stay with this hustler
 
 
 async def _get_response(client: ClaudeSDKClient) -> dict:
