@@ -4,28 +4,28 @@ A virtual chess plaza with AI-powered chess hustlers, each with their own unique
 
 Think of Washington Square Park in NYC, or Dupont Circle in DC (but not any specific, exact place!) – places where chess hustlers gather to play, banter, and challenge passersby. This project brings that experience to your terminal, powered by LLMs.
 
-## Vision
+## Roadmap
 
-**Phase 1: Claude Agents SDK Foundation**
-- Chess hustler personas powered by Claude Agents SDK
-- Integration with UCI chess engines via [chess-uci-mcp](https://github.com/AnglerfishChess/chess-uci-mcp)
+**Phase 1: Claude Agents epoch**
+- Chess hustler personas powered by Claude Agents SDK;
+- Integration with UCI chess engines via [chess-uci-mcp](https://github.com/AnglerfishChess/chess-uci-mcp);
 - Different hustler personalities: the trash-talker, the philosopher, the speed demon, the old master...
+- Game/chat loop using Claude Agents SDK.
 
-**Phase 2: Multi-AI/SDK Experimentation**
-- Support for different AI providers and SDKs
-- Compare how different LLMs embody hustler personalities
-- Explore agent frameworks and patterns
+**Phase 2: Experimentation epoch**
+- Basic voice output (Edge-TTS), complementing the text UI;
+- Voice input (Whisper) to call out your moves (and words) instead of keyboard input;
+- Switchable UI: command-line vs PySide-based (with proper chess board).
 
-**Phase 3: Voice Interface**
-- Text-to-speech for hustler voices (each with distinct voice characteristics)
-- Speech-to-text for calling out your moves
-- Full immersive audio experience
+**Phase 3: LangGraph/Gemini epoch**
+- Switching to Gemini, for LLM but specifically for advanced text-to-speech (each with distinct voice characteristics, intonations, etc);
+- (Because of Gemini switch) Migrating from Claude Agents SDK to `GenAI` SDK (TTS, one-shot queries) and LangGraph (game/chat loop).
 
 ## Prerequisites
 
-- **Claude Code** authenticated ([install](https://docs.anthropic.com/en/docs/claude-code/getting-started)), or `ANTHROPIC_API_KEY` env var
-- **uv** package manager ([install](https://docs.astral.sh/uv/getting-started/installation/))
-- **Stockfish** or another UCI chess engine ([download](https://stockfishchess.org/download/))
+- **Claude Code** authenticated ([install](https://docs.anthropic.com/en/docs/claude-code/getting-started)), or `ANTHROPIC_API_KEY` environment variable;
+- **uv** package manager ([install](https://docs.astral.sh/uv/getting-started/installation/));
+- **Stockfish** or another UCI chess engine ([download](https://stockfishchess.org/download/)).
 
 ## Usage
 
