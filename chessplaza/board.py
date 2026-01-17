@@ -29,22 +29,22 @@ async def new_game(args: dict[str, Any]) -> dict[str, Any]:
     global _board
     _board = chess.Board()
     return {
-        "content": [{
-            "type": "text",
-            "text": json.dumps({
-                "fen": _board.fen(),
-                "game_status": "ongoing",
-                "turn": "white",
-            })
-        }]
+        "content": [
+            {
+                "type": "text",
+                "text": json.dumps(
+                    {
+                        "fen": _board.fen(),
+                        "game_status": "ongoing",
+                        "turn": "white",
+                    }
+                ),
+            }
+        ]
     }
 
 
-@tool(
-    "make_move",
-    "Make a chess move. Accepts SAN (Nf3, e4, O-O) or UCI (g1f3, e2e4).",
-    {"move": str}
-)
+@tool("make_move", "Make a chess move. Accepts SAN (Nf3, e4, O-O) or UCI (g1f3, e2e4).", {"move": str})
 async def make_move(args: dict[str, Any]) -> dict[str, Any]:
     """Apply a move to the board."""
     move_input = args.get("move", "").strip()
@@ -65,28 +65,36 @@ async def make_move(args: dict[str, Any]) -> dict[str, Any]:
 
     if parsed is None:
         return {
-            "content": [{
-                "type": "text",
-                "text": json.dumps({
-                    "valid": False,
-                    "error": f"Invalid notation: {move_input}",
-                    "fen": _board.fen(),
-                    "game_status": _game_status(),
-                })
-            }]
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps(
+                        {
+                            "valid": False,
+                            "error": f"Invalid notation: {move_input}",
+                            "fen": _board.fen(),
+                            "game_status": _game_status(),
+                        }
+                    ),
+                }
+            ]
         }
 
     if parsed not in _board.legal_moves:
         return {
-            "content": [{
-                "type": "text",
-                "text": json.dumps({
-                    "valid": False,
-                    "error": f"Illegal move: {move_input}",
-                    "fen": _board.fen(),
-                    "game_status": _game_status(),
-                })
-            }]
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps(
+                        {
+                            "valid": False,
+                            "error": f"Illegal move: {move_input}",
+                            "fen": _board.fen(),
+                            "game_status": _game_status(),
+                        }
+                    ),
+                }
+            ]
         }
 
     # Get SAN before pushing (for cleaner notation)
@@ -98,17 +106,21 @@ async def make_move(args: dict[str, Any]) -> dict[str, Any]:
     turn = "white" if _board.turn == chess.WHITE else "black"
 
     return {
-        "content": [{
-            "type": "text",
-            "text": json.dumps({
-                "valid": True,
-                "san": san,
-                "uci": uci,
-                "fen": _board.fen(),
-                "game_status": _game_status(),
-                "turn": turn,
-            })
-        }]
+        "content": [
+            {
+                "type": "text",
+                "text": json.dumps(
+                    {
+                        "valid": True,
+                        "san": san,
+                        "uci": uci,
+                        "fen": _board.fen(),
+                        "game_status": _game_status(),
+                        "turn": turn,
+                    }
+                ),
+            }
+        ]
     }
 
 
@@ -117,14 +129,18 @@ async def get_position(args: dict[str, Any]) -> dict[str, Any]:
     """Return current board state."""
     turn = "white" if _board.turn == chess.WHITE else "black"
     return {
-        "content": [{
-            "type": "text",
-            "text": json.dumps({
-                "fen": _board.fen(),
-                "game_status": _game_status(),
-                "turn": turn,
-            })
-        }]
+        "content": [
+            {
+                "type": "text",
+                "text": json.dumps(
+                    {
+                        "fen": _board.fen(),
+                        "game_status": _game_status(),
+                        "turn": turn,
+                    }
+                ),
+            }
+        ]
     }
 
 
@@ -133,20 +149,22 @@ async def get_legal_moves(args: dict[str, Any]) -> dict[str, Any]:
     """List all legal moves."""
     moves = [_board.san(m) for m in _board.legal_moves]
     return {
-        "content": [{
-            "type": "text",
-            "text": json.dumps({
-                "legal_moves": moves,
-                "count": len(moves),
-            })
-        }]
+        "content": [
+            {
+                "type": "text",
+                "text": json.dumps(
+                    {
+                        "legal_moves": moves,
+                        "count": len(moves),
+                    }
+                ),
+            }
+        ]
     }
 
 
 def create_board_mcp_server():
     """Create the chessplaza board MCP server."""
     return create_sdk_mcp_server(
-        name="plaza",
-        version="1.0.0",
-        tools=[new_game, make_move, get_position, get_legal_moves]
+        name="plaza", version="1.0.0", tools=[new_game, make_move, get_position, get_legal_moves]
     )

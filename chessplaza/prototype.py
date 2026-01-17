@@ -5,7 +5,6 @@ Supports both console mode (using rich) and GUI mode (using PySide6).
 """
 
 from abc import ABC, abstractmethod
-from typing import Protocol
 
 import chess
 import chess.svg
@@ -17,14 +16,34 @@ from rich.text import Text
 
 # Sample chat data for demonstration
 SAMPLE_CHAT = [
-    ("Eddie", "cyan", "Hey there, welcome to the plaza! You look like someone who knows their way around a chessboard."),
+    (
+        "Eddie",
+        "cyan",
+        "Hey there, welcome to the plaza! You look like someone who knows their way around a chessboard.",
+    ),
     ("Victor", "yellow", "Don't let Eddie fool you. He talks a big game but his endgame is weak."),
     ("Eddie", "cyan", "Weak? I beat you three times last week, old man!"),
     ("Mei", "magenta", "Boys, boys... save the fighting for the board. So, newcomer, you here to play or just watch?"),
-    ("Marco", "green", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."),
-    ("Eddie", "cyan", "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."),
-    ("Victor", "yellow", "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."),
-    ("Mei", "magenta", "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."),
+    (
+        "Marco",
+        "green",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    ),
+    (
+        "Eddie",
+        "cyan",
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    ),
+    (
+        "Victor",
+        "yellow",
+        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    ),
+    (
+        "Mei",
+        "magenta",
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+    ),
 ]
 
 
@@ -105,8 +124,15 @@ class GUIOutput(GameOutput):
         # Lazy import PySide6
         try:
             from PySide6.QtWidgets import (
-                QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-                QTextBrowser, QLineEdit, QPushButton, QSplitter
+                QApplication,
+                QMainWindow,
+                QWidget,
+                QVBoxLayout,
+                QHBoxLayout,
+                QTextBrowser,
+                QLineEdit,
+                QPushButton,
+                QSplitter,
             )
             from PySide6.QtCore import Qt, Signal, QObject
             from PySide6.QtSvgWidgets import QSvgWidget
@@ -115,20 +141,20 @@ class GUIOutput(GameOutput):
             raise ImportError("PySide6 not installed. Install with: uv pip install -e '.[gui]'")
 
         self._qt_imports = {
-            'QApplication': QApplication,
-            'QMainWindow': QMainWindow,
-            'QWidget': QWidget,
-            'QVBoxLayout': QVBoxLayout,
-            'QHBoxLayout': QHBoxLayout,
-            'QTextBrowser': QTextBrowser,
-            'QLineEdit': QLineEdit,
-            'QPushButton': QPushButton,
-            'QSplitter': QSplitter,
-            'Qt': Qt,
-            'Signal': Signal,
-            'QObject': QObject,
-            'QSvgWidget': QSvgWidget,
-            'QFont': QFont,
+            "QApplication": QApplication,
+            "QMainWindow": QMainWindow,
+            "QWidget": QWidget,
+            "QVBoxLayout": QVBoxLayout,
+            "QHBoxLayout": QHBoxLayout,
+            "QTextBrowser": QTextBrowser,
+            "QLineEdit": QLineEdit,
+            "QPushButton": QPushButton,
+            "QSplitter": QSplitter,
+            "Qt": Qt,
+            "Signal": Signal,
+            "QObject": QObject,
+            "QSvgWidget": QSvgWidget,
+            "QFont": QFont,
         }
 
         self.app = None
@@ -141,17 +167,17 @@ class GUIOutput(GameOutput):
 
     def _setup_ui(self):
         """Set up the GUI components."""
-        Qt = self._qt_imports['Qt']
-        QApplication = self._qt_imports['QApplication']
-        QMainWindow = self._qt_imports['QMainWindow']
-        QWidget = self._qt_imports['QWidget']
-        QVBoxLayout = self._qt_imports['QVBoxLayout']
-        QHBoxLayout = self._qt_imports['QHBoxLayout']
-        QTextBrowser = self._qt_imports['QTextBrowser']
-        QLineEdit = self._qt_imports['QLineEdit']
-        QSplitter = self._qt_imports['QSplitter']
-        QSvgWidget = self._qt_imports['QSvgWidget']
-        QFont = self._qt_imports['QFont']
+        Qt = self._qt_imports["Qt"]
+        QApplication = self._qt_imports["QApplication"]
+        QMainWindow = self._qt_imports["QMainWindow"]
+        QWidget = self._qt_imports["QWidget"]
+        QVBoxLayout = self._qt_imports["QVBoxLayout"]
+        QHBoxLayout = self._qt_imports["QHBoxLayout"]
+        QTextBrowser = self._qt_imports["QTextBrowser"]
+        QLineEdit = self._qt_imports["QLineEdit"]
+        QSplitter = self._qt_imports["QSplitter"]
+        QSvgWidget = self._qt_imports["QSvgWidget"]
+        QFont = self._qt_imports["QFont"]
 
         self.app = QApplication([])
         self.window = QMainWindow()
@@ -240,18 +266,14 @@ class GUIOutput(GameOutput):
         html_color = color_map.get(color, "#d4d4d4")
         html = f'<span style="color: {html_color}; font-weight: bold;">{author}:</span> {text}<br>'
         self.chat_display.insertHtml(html)
-        self.chat_display.verticalScrollBar().setValue(
-            self.chat_display.verticalScrollBar().maximum()
-        )
+        self.chat_display.verticalScrollBar().setValue(self.chat_display.verticalScrollBar().maximum())
 
     def print_system(self, text: str, bold: bool = False) -> None:
         """Print system text."""
         weight = "bold" if bold else "normal"
         html = f'<span style="color: #888; font-weight: {weight};">{text}</span><br>'
         self.chat_display.insertHtml(html)
-        self.chat_display.verticalScrollBar().setValue(
-            self.chat_display.verticalScrollBar().maximum()
-        )
+        self.chat_display.verticalScrollBar().setValue(self.chat_display.verticalScrollBar().maximum())
 
     def get_input(self, prompt: str = "You") -> str:
         """Enable input field and wait for user input."""
@@ -271,7 +293,7 @@ class GUIOutput(GameOutput):
     def display_chess_position(self, fen: str) -> None:
         """Display a chess position from FEN string."""
         board = chess.Board(fen)
-        svg_data = chess.svg.board(board).encode('utf-8')
+        svg_data = chess.svg.board(board).encode("utf-8")
         self.chess_widget.load(svg_data)
 
     def run(self) -> None:

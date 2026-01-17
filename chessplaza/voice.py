@@ -16,13 +16,11 @@ def _load_voice_deps():
         try:
             import edge_tts
             import miniaudio
+
             _edge_tts = edge_tts
             _miniaudio = miniaudio
         except ImportError:
-            raise ImportError(
-                "Voice support requires extra dependencies. "
-                "Install with: uv pip install -e '.[voice]'"
-            )
+            raise ImportError("Voice support requires extra dependencies. Install with: uv pip install -e '.[voice]'")
 
 
 def is_voice_available() -> bool:

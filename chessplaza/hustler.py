@@ -30,22 +30,23 @@ def _register(hustler: Hustler) -> Hustler:
 
 
 # --- Fast Eddie ---
-FAST_EDDIE = _register(Hustler(
-    id="eddie",
-    name="Fast Eddie",
-    voice="en-US-GuyNeural",
-    elo=1800,
-    engine_options={
-        # Stockfish
-        "UCI_LimitStrength": "true",
-        "UCI_Elo": "1800",
-        "Slow Mover": "70",  # Plays fast, doesn't overthink
-        # Lc0
-        "Temperature": "0.3",  # Some street flair
-        # Fallback
-        "Skill Level": str(_elo_to_skill_level(1800)),
-    },
-    prompt="""Fast Eddie is a 60+ year old chess hustler at a park.
+FAST_EDDIE = _register(
+    Hustler(
+        id="eddie",
+        name="Fast Eddie",
+        voice="en-US-GuyNeural",
+        elo=1800,
+        engine_options={
+            # Stockfish
+            "UCI_LimitStrength": "true",
+            "UCI_Elo": "1800",
+            "Slow Mover": "70",  # Plays fast, doesn't overthink
+            # Lc0
+            "Temperature": "0.3",  # Some street flair
+            # Fallback
+            "Skill Level": str(_elo_to_skill_level(1800)),
+        },
+        prompt="""Fast Eddie is a 60+ year old chess hustler at a park.
 
 Personality:
 - Cocky and confident, but not mean-spirited
@@ -60,26 +61,28 @@ Personality:
 - ELO about 1800, but he never mentions it
 
 Keep responses brief (2-4 sentences) unless asked for more.""",
-))
+    )
+)
 
 
 # --- Viktor ---
-VIKTOR = _register(Hustler(
-    id="viktor",
-    name="Viktor",
-    voice="en-US-ChristopherNeural",
-    elo=2200,
-    engine_options={
-        # Stockfish
-        "UCI_LimitStrength": "true",
-        "UCI_Elo": "2200",
-        "Slow Mover": "150",  # Contemplative, takes his time
-        # Lc0
-        "Temperature": "0.0",  # Precise, classical, no randomness
-        # Fallback
-        "Skill Level": str(_elo_to_skill_level(2200)),
-    },
-    prompt="""Viktor is a 70+ year old Russian man who plays chess at a park.
+VIKTOR = _register(
+    Hustler(
+        id="viktor",
+        name="Viktor",
+        voice="en-US-ChristopherNeural",
+        elo=2200,
+        engine_options={
+            # Stockfish
+            "UCI_LimitStrength": "true",
+            "UCI_Elo": "2200",
+            "Slow Mover": "150",  # Contemplative, takes his time
+            # Lc0
+            "Temperature": "0.0",  # Precise, classical, no randomness
+            # Fallback
+            "Skill Level": str(_elo_to_skill_level(2200)),
+        },
+        prompt="""Viktor is a 70+ year old Russian man who plays chess at a park.
 
 Background (he never states directly, only hints):
 - Was once a strong player, possibly titled, in the Soviet Union
@@ -97,26 +100,28 @@ Personality:
 - ELO about 2200 or more (he never mentions it), but assumed to be much higher in his early days
 
 Keep responses measured, philosophical. 2-4 sentences unless reminiscing.""",
-))
+    )
+)
 
 
 # --- Mei ---
-MEI = _register(Hustler(
-    id="mei",
-    name="Mei",
-    voice="en-US-AnaNeural",
-    elo=2000,
-    engine_options={
-        # Stockfish
-        "UCI_LimitStrength": "true",
-        "UCI_Elo": "2000",
-        "Slow Mover": "90",  # Slightly hesitant
-        # Lc0
-        "Temperature": "0.1",  # Occasional "nervous" deviation
-        # Fallback
-        "Skill Level": str(_elo_to_skill_level(2000)),
-    },
-    prompt="""Mei is a about-16-year-old Chinese-American girl who plays chess at a park.
+MEI = _register(
+    Hustler(
+        id="mei",
+        name="Mei",
+        voice="en-US-AnaNeural",
+        elo=2000,
+        engine_options={
+            # Stockfish
+            "UCI_LimitStrength": "true",
+            "UCI_Elo": "2000",
+            "Slow Mover": "90",  # Slightly hesitant
+            # Lc0
+            "Temperature": "0.1",  # Occasional "nervous" deviation
+            # Fallback
+            "Skill Level": str(_elo_to_skill_level(2000)),
+        },
+        prompt="""Mei is a about-16-year-old Chinese-American girl who plays chess at a park.
 
 Background:
 - Homeschooled by demanding academic parents
@@ -139,26 +144,28 @@ Speech pattern:
 - Trails off with "..."
 
 Keep responses brief, halting. Show the internal struggle between wanting to connect and anxiety.""",
-))
+    )
+)
 
 
 # --- Marco ---
-MARCO = _register(Hustler(
-    id="marco",
-    name="Marco",
-    voice="en-US-GuyNeural",
-    elo=1500,
-    engine_options={
-        # Stockfish
-        "UCI_LimitStrength": "true",
-        "UCI_Elo": "1500",
-        "Slow Mover": "120",  # Takes time but still blunders
-        # Lc0
-        "Temperature": "0.5",  # Chaotic, "Guadalajara Defense"
-        # Fallback
-        "Skill Level": str(_elo_to_skill_level(1500)),
-    },
-    prompt="""Marco is an about-22-year-old Mexican-American who plays chess at a park.
+MARCO = _register(
+    Hustler(
+        id="marco",
+        name="Marco",
+        voice="en-US-GuyNeural",
+        elo=1500,
+        engine_options={
+            # Stockfish
+            "UCI_LimitStrength": "true",
+            "UCI_Elo": "1500",
+            "Slow Mover": "120",  # Takes time but still blunders
+            # Lc0
+            "Temperature": "0.5",  # Chaotic, "Guadalajara Defense"
+            # Fallback
+            "Skill Level": str(_elo_to_skill_level(1500)),
+        },
+        prompt="""Marco is an about-22-year-old Mexican-American who plays chess at a park.
 
 Background:
 - Grew up in a tough neighborhood, has amateur tattoos (some regrettable)
@@ -180,7 +187,8 @@ Personality:
 - real ELO about 1500, but he falsely thinks he is smarter than that
 
 Keep responses energetic, boastful, loud. 2-4 sentences, always deflecting any criticism.""",
-))
+    )
+)
 
 
 # --- Park host prompt (for scene and hustler selection) ---
@@ -260,9 +268,7 @@ def get_unified_game_prompt(language: str = "English", park_time: dict[str, str]
         language: Language for the experience.
         park_time: Dict with "date", "day_of_week", "time_of_day" for atmosphere.
     """
-    hustler_profiles = "\n\n".join(
-        f"--- {h.name} (id: {h.id}) ---\n{h.prompt}" for h in HUSTLERS.values()
-    )
+    hustler_profiles = "\n\n".join(f"--- {h.name} (id: {h.id}) ---\n{h.prompt}" for h in HUSTLERS.values())
     hustler_ids = "|".join(HUSTLERS.keys())
     approach_actions = "|".join(f"approach_{h_id}" for h_id in HUSTLERS.keys())
 
@@ -270,10 +276,7 @@ def get_unified_game_prompt(language: str = "English", park_time: dict[str, str]
     def format_options(opts: dict[str, str]) -> str:
         return ", ".join(f'"{k}": "{v}"' for k, v in opts.items())
 
-    engine_options_section = "\n".join(
-        f"- {h.name}: {{{format_options(h.engine_options)}}}"
-        for h in HUSTLERS.values()
-    )
+    engine_options_section = "\n".join(f"- {h.name}: {{{format_options(h.engine_options)}}}" for h in HUSTLERS.values())
 
     language_instruction = ""
     if language.lower() != "english":
@@ -287,7 +290,7 @@ Characters keep their personality and background, just dubbed into {language}.""
     if park_time:
         time_context = f"""
 
-CURRENT TIME: {park_time['time_of_day']} on {park_time['day_of_week']}, {park_time['date']}
+CURRENT TIME: {park_time["time_of_day"]} on {park_time["day_of_week"]}, {park_time["date"]}
 Use this for atmosphere: season affects weather/clothing (NYC climate), time affects lighting/crowd levels,
 weekday vs weekend affects who's around. Late evening = fewer people, quieter, lamps on."""
 

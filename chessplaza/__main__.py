@@ -10,9 +10,12 @@ Supports running via:
 import asyncio
 from datetime import datetime
 import json
+import logging
 import random
+import sys
 
 import click
+from rich.console import Console
 
 from claude_agent_sdk import AssistantMessage, ClaudeAgentOptions, ClaudeSDKClient, TextBlock
 
@@ -23,6 +26,46 @@ from chessplaza.hustler import (
     Hustler,
     get_unified_game_prompt,
 )
+
+# Module logger
+logger = logging.getLogger(__name__)
+
+# Shared console instance for all output
+# In future, this can be configured for different output targets (GUI widget, etc.)
+console = Console()
+
+
+def setup_logging(log: bool = False, debug: bool = False) -> None:
+    """Configure root logging for the application.
+
+    Args:
+        log: Enable INFO level logging to stderr.
+        debug: Enable DEBUG level logging to stderr (implies log=True).
+    """
+    if debug:
+        level = logging.DEBUG
+    elif log:
+        level = logging.INFO
+    else:
+        level = logging.ERROR
+
+    # Configure root logger
+    root = logging.getLogger()
+    root.setLevel(level)
+    root.handlers.clear()
+
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setLevel(level)
+
+    if debug:
+        fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        formatter = logging.Formatter(fmt, datefmt="%H:%M:%S")
+    else:
+        formatter = logging.Formatter("%(levelname)s: %(message)s")
+
+    handler.setFormatter(formatter)
+    root.addHandler(handler)
+
 
 # Track if we've shown the interaction hint
 _hint_shown: bool = False
@@ -58,6 +101,7 @@ def _get_park_time() -> dict[str, str]:
         "time_of_day": time_of_day,
     }
 
+
 # Voice module is optional - imported lazily only when --voice is used
 # because edge-tts and miniaudio may not be installed
 
@@ -65,31 +109,45 @@ def _get_park_time() -> dict[str, str]:
 @click.command()
 @click.version_option(version=__version__, prog_name="chessplaza")
 @click.argument("engine", type=click.Path(exists=True))
-@click.option("--language", "-l", default="English", help="Language for the experience (e.g., Russian, Spanish, Chinese)")
+@click.option(
+    "--language", "-l", default="English", help="Language for the experience (e.g., Russian, Spanish, Chinese)"
+)
 @click.option("--voice", "-v", is_flag=True, help="Enable text-to-speech (requires voice extras)")
-@click.option("--use-github-deps", is_flag=True, help="Use bleeding-edge GitHub versions of dependencies instead of PyPI")
+@click.option(
+    "--use-github-deps", is_flag=True, help="Use bleeding-edge GitHub versions of dependencies instead of PyPI"
+)
 @click.option("--prototype", is_flag=True, help="Run the chat game UI prototype instead of the main game")
 @click.option("--gui", is_flag=True, help="Use PySide6 GUI (only with --prototype)")
-def main(engine: str, language: str, voice: bool, use_github_deps: bool, prototype: bool, gui: bool):
+@click.option("--log", is_flag=True, help="Enable info-level logging to stderr")
+@click.option("--debug", "-d", is_flag=True, help="Enable debug-level logging to stderr")
+def main(
+    engine: str, language: str, voice: bool, use_github_deps: bool, prototype: bool, gui: bool, log: bool, debug: bool
+):
     """Welcome to Chess Plaza - play against AI chess hustlers with personality.
 
     ENGINE is the path to a UCI-compatible chess engine (e.g., /usr/local/bin/stockfish).
     """
+    setup_logging(log=log, debug=debug)
+
     # Prototype mode - run the UI prototype instead of the main game
     if prototype:
         from chessplaza.prototype import run_prototype
+
         run_prototype(gui=gui)
         return
 
     # Voice check - lazy import because it's optional
     if voice:
+        voice_unavailable_error = "Voice support not available. Install with: uv pip install -e '.[voice]'"
+
         try:
             from chessplaza.voice import is_voice_available
+
             if not is_voice_available():
-                click.echo("Voice support not available. Install with: uv pip install -e '.[voice]'", err=True)
+                logger.critical(voice_unavailable_error)
                 return
         except ImportError:
-            click.echo("Voice support not available. Install with: uv pip install -e '.[voice]'", err=True)
+            logger.critical(voice_unavailable_error)
             return
 
     asyncio.run(_play_loop(engine, language, voice, use_github_deps))
@@ -183,12 +241,12 @@ async def _park_phase(client: ClaudeSDKClient, voice_enabled: bool) -> Hustler |
 
     # Show hint only once per session
     if not _hint_shown:
-        random_hustler_name = lambda: random.choice(list(HUSTLERS.values())).name
+        example_hustler = random.choice(list(HUSTLERS.values())).name
         click.echo()
         click.secho(
             f"(Whenever your input is needed, you can just say what you going to do, "
-            f"e.g., \"I want to play with {random_hustler_name()}\", or \"I want to leave the park\").",
-            dim=True
+            f'e.g., "I want to play with {example_hustler}", or "I want to leave the park").',
+            dim=True,
         )
         _hint_shown = True
 
@@ -324,6 +382,7 @@ async def _display_response(response: dict, voice_enabled: bool, hustler: Hustle
     # Speak if voice enabled and a hustler is speaking (not narrator)
     if voice_enabled and spoken_tts and speaker:
         from chessplaza.voice import speak
+
         await speak(spoken_tts, speaker.voice)
 
 
