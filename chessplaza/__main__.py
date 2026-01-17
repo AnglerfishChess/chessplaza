@@ -161,9 +161,7 @@ _GITHUB_DEPS = {
 
 async def _play_loop(engine_path: str, language: str, voice_enabled: bool, use_github_deps: bool = False):
     """Main game loop."""
-    click.echo()
-    click.secho("=== Welcome to Chess Plaza ===", fg="cyan", bold=True)
-    click.echo()
+    console.print("\n=== Welcome to Chess Plaza ===\n", style="bold cyan")
 
     leave_park_text = "You leave the park. The sounds of chess fade behind you..."
 
@@ -215,13 +213,13 @@ async def _play_loop(engine_path: str, language: str, voice_enabled: bool, use_g
             hustler = await _park_phase(client, voice_enabled)
             if hustler is None:
                 # User wants to leave the park
-                click.secho(f"\n{leave_park_text}", dim=True)
+                console.print(f"\n{leave_park_text}", style="dim")
                 break
 
             # Dialog phase with selected hustler
             leave_park = await _dialog_phase(client, hustler, voice_enabled)
             if leave_park:
-                click.secho(f"\n{leave_park_text}", dim=True)
+                console.print(f"\n{leave_park_text}", style="dim")
                 break
             # Otherwise, back to park to select another hustler
 
@@ -242,17 +240,16 @@ async def _park_phase(client: ClaudeSDKClient, voice_enabled: bool) -> Hustler |
     # Show hint only once per session
     if not _hint_shown:
         example_hustler = random.choice(list(HUSTLERS.values())).name
-        click.echo()
-        click.secho(
-            f"(Whenever your input is needed, you can just say what you going to do, "
+        console.print(
+            f"\n(Whenever your input is needed, you can just say what you going to do, "
             f'e.g., "I want to play with {example_hustler}", or "I want to leave the park").',
-            dim=True,
+            style="dim",
         )
         _hint_shown = True
 
     # Selection loop
     while True:
-        user_input = click.prompt("\nYou", prompt_suffix="> ")
+        user_input = console.input("\n[bold green]You>[/bold green] ")
 
         if _is_leaving_park(user_input):
             return None
@@ -274,9 +271,7 @@ async def _dialog_phase(client: ClaudeSDKClient, hustler: Hustler, voice_enabled
 
     Returns True if user wants to leave the park entirely, False to go back to park.
     """
-    click.echo()
-    click.secho(f"--- Talking to {hustler.name} ---", fg="yellow", bold=True)
-    click.echo()
+    console.print(f"\n--- Talking to {hustler.name} ---\n", style="bold yellow")
 
     prefix = f"[TALKING TO {hustler.name}]"
 
@@ -288,7 +283,7 @@ async def _dialog_phase(client: ClaudeSDKClient, hustler: Hustler, voice_enabled
 
     # Dialog loop
     while True:
-        user_input = click.prompt("\nYou", prompt_suffix="> ")
+        user_input = console.input("\n[bold green]You>[/bold green] ")
         await client.query(f"{prefix} {user_input}")
 
         response = await _get_response(client)
@@ -298,7 +293,7 @@ async def _dialog_phase(client: ClaudeSDKClient, hustler: Hustler, voice_enabled
 
         if intent == "leaving_park":
             # Hustler detected user wants to leave park - confirm
-            user_confirm = click.prompt("\nYou", prompt_suffix="> ")
+            user_confirm = console.input("\n[bold green]You>[/bold green] ")
             await client.query(f"{prefix} {user_confirm}")
             response = await _get_response(client)
             await _display_response(response, voice_enabled, hustler)
@@ -312,7 +307,7 @@ async def _dialog_phase(client: ClaudeSDKClient, hustler: Hustler, voice_enabled
 
         elif intent == "leaving_opponent":
             # Hustler detected user wants to leave this table - confirm
-            user_confirm = click.prompt("\nYou", prompt_suffix="> ")
+            user_confirm = console.input("\n[bold green]You>[/bold green] ")
             await client.query(f"{prefix} {user_confirm}")
             response = await _get_response(client)
             await _display_response(response, voice_enabled, hustler)
@@ -371,13 +366,14 @@ async def _display_response(response: dict, voice_enabled: bool, hustler: Hustle
 
     # Print narrative in dim/italic
     if narrative:
-        click.secho(narrative, dim=True, italic=True)
+        console.print(narrative, style="dim italic")
 
     # Print spoken words
     if spoken_display:
         if speaker:
-            click.secho(f"{speaker.name}: ", fg="green", bold=True, nl=False)
-        click.echo(spoken_display)
+            console.print(f"[bold green]{speaker.name}:[/bold green] {spoken_display}")
+        else:
+            console.print(spoken_display)
 
     # Speak if voice enabled and a hustler is speaking (not narrator)
     if voice_enabled and spoken_tts and speaker:
