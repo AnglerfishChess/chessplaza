@@ -13,6 +13,7 @@ import json
 import logging
 import random
 import sys
+from typing import Optional
 
 import click
 from rich.console import Console
@@ -71,12 +72,13 @@ def setup_logging(log: bool = False, debug: bool = False) -> None:
 _hint_shown: bool = False
 
 
-def _get_park_time() -> dict[str, str]:
+def _get_park_time(now: Optional[datetime] = None) -> dict[str, str]:
     """Get current date/time info for park atmosphere.
 
     Night hours (22:00-06:00) are treated as late evening.
     """
-    now = datetime.now()
+    if now is None:
+        now = datetime.now()
 
     # Clamp night to late evening
     hour = now.hour
@@ -251,9 +253,6 @@ async def _park_phase(client: ClaudeSDKClient, voice_enabled: bool) -> Hustler |
     while True:
         user_input = console.input("\n[bold green]You>[/bold green] ")
 
-        if _is_leaving_park(user_input):
-            return None
-
         await client.query(f"[NARRATOR] {user_input}")
         response = await _get_response(client)
         await _display_response(response, voice_enabled, None)
@@ -380,13 +379,6 @@ async def _display_response(response: dict, voice_enabled: bool, hustler: Hustle
         from chessplaza.voice import speak
 
         await speak(spoken_tts, speaker.voice)
-
-
-def _is_leaving_park(text: str) -> bool:
-    """Quick check if user wants to leave the park from the park selection phase."""
-    text_lower = text.lower()
-    leave_phrases = ["leave", "exit", "quit", "go home", "goodbye", "bye", "i'm out", "gotta go"]
-    return any(phrase in text_lower for phrase in leave_phrases)
 
 
 if __name__ == "__main__":
