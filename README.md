@@ -58,6 +58,10 @@ uv pip install -e ".[dev,voice]"
 chessplaza /usr/local/bin/stockfish
 ```
 
+### Building Redistributables
+
+PyInstaller is included in dev dependencies for building standalone apps. Full build instructions coming soon.
+
 ## Related Projects
 
 - [chess-uci-mcp](https://github.com/AnglerfishChess/chess-uci-mcp) - MCP bridge to UCI chess engines
