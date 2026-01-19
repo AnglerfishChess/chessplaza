@@ -61,6 +61,7 @@ Thumbs.db
 *nogit*
 *.local.*
 .serena/
+.env
 
 # PyInstaller
 *.spec

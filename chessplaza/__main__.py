@@ -131,9 +131,9 @@ def main(
     """
     setup_logging(log=log, debug=debug)
 
-    # Prototype mode - run the UI prototype instead of the main game
+    # Prototype mode - run the UI prototype instead of the main game (dev only)
     if prototype:
-        from chessplaza.prototype import run_prototype
+        from tests.proto.ui import run_prototype
 
         run_prototype(gui=gui)
         return

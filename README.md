@@ -62,6 +62,32 @@ chessplaza /usr/local/bin/stockfish
 
 PyInstaller is included in dev dependencies for building standalone apps. Full build instructions coming soon.
 
+## Troubleshooting
+
+### macOS: Microphone not working (voice input)
+
+If voice input records silence or doesn't work, your terminal app likely lacks microphone permissions.
+
+**Fix:**
+1. Open **System Settings → Privacy & Security → Microphone**
+2. Find your terminal app (Terminal, iTerm2, VS Code, etc.) and enable it
+3. If not listed, the app hasn't requested access yet – try restarting the app
+
+**Verify via command line:**
+```bash
+# Check which apps have microphone access
+tccutil list Microphone
+```
+
+**Still not working?** Reset permissions to trigger a fresh prompt:
+```bash
+# For Terminal.app
+tccutil reset Microphone com.apple.Terminal
+
+# For iTerm2
+tccutil reset Microphone com.googlecode.iterm2
+```
+
 ## Related Projects
 
 - [chess-uci-mcp](https://github.com/AnglerfishChess/chess-uci-mcp) - MCP bridge to UCI chess engines
