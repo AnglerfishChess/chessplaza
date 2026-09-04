@@ -18,26 +18,30 @@ keywords = [
     "anthropic"
 ]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
     "Topic :: Games/Entertainment :: Board Games",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent"
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
+
 dependencies = [
-    "claude-agent-sdk>=0.1.0",
-    "chess>=1.11.2,<2.0.0",
+    "claude-agent-sdk>=0.2.152",
     "click>=8.1.8,<9.0.0",
+    "esca>=0.3,<0.4",
     "python-dotenv>=1.0.0",
     "rich>=13.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/AnglerfishChess/chessplaza"
+Repository = "https://github.com/AnglerfishChess/chessplaza"
+Issues = "https://github.com/AnglerfishChess/chessplaza/issues"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -52,13 +56,15 @@ voice = [
     "google-genai>=1.0.0",
     "miniaudio>=1.60",
 ]
+
+[dependency-groups]
 dev = [
+    "pyinstaller>=6.0.0",
+    "pyrefly>=0.16.0",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.23.0",
     "pytest-claude-agent-sdk>=0.1.0",
     "ruff>=0.11.4",
-    "uv-publish>=1.2",
-    "pyinstaller>=6.0.0",
 ]
 
 [project.scripts]
@@ -70,4 +76,26 @@ packages = ["chessplaza"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "PT", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# Prompt text, wrapped where the prompt wants it rather than where the linter does.
+"chessplaza/hustler.py" = ["E501"]
+
+[tool.pyrefly]
+project-includes = ["chessplaza", "tests"]
+# The `voice` and `gui` extras are not installed for a type check.
+replace-imports-with-any = ["edge_tts", "miniaudio", "google", "google.*", "PySide6.*"]
+search-path = [".", "tests"]
+python-version = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+addopts = "--strict-markers -ra -m 'not llm'"
+asyncio_mode = "strict"
+markers = [
+    "llm: personality test judged by a live Claude session",
+]

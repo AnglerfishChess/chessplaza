@@ -1,12 +1,13 @@
 """Voice/TTS support for Chess Plaza using edge-tts and miniaudio."""
 
-import tempfile
 import os
+import tempfile
 import time
+from typing import Any
 
 # These are optional dependencies - only imported if --voice is used
-_edge_tts = None
-_miniaudio = None
+_edge_tts: Any = None
+_miniaudio: Any = None
 
 
 def _load_voice_deps():
@@ -19,8 +20,8 @@ def _load_voice_deps():
 
             _edge_tts = edge_tts
             _miniaudio = miniaudio
-        except ImportError:
-            raise ImportError("Voice support requires extra dependencies. Install with: uv pip install -e '.[voice]'")
+        except ImportError as exc:
+            raise ImportError("Voice support requires extra dependencies. Install with: uv sync --extra voice") from exc
 
 
 def is_voice_available() -> bool:

@@ -8,17 +8,16 @@ Supports running via:
 """
 
 import asyncio
-from datetime import datetime
 import json
 import logging
 import random
 import sys
-from typing import Optional
+from datetime import datetime
 
 import click
-from rich.console import Console
-
 from claude_agent_sdk import AssistantMessage, ClaudeAgentOptions, ClaudeSDKClient, TextBlock
+from claude_agent_sdk.types import McpServerConfig
+from rich.console import Console
 
 from chessplaza import __version__
 from chessplaza.board import create_board_mcp_server
@@ -72,7 +71,7 @@ def setup_logging(log: bool = False, debug: bool = False) -> None:
 _hint_shown: bool = False
 
 
-def _get_park_time(now: Optional[datetime] = None) -> dict[str, str]:
+def _get_park_time(now: datetime | None = None) -> dict[str, str]:
     """Get current date/time info for park atmosphere.
 
     Night hours (22:00-06:00) are treated as late evening.
@@ -173,14 +172,14 @@ async def _play_loop(engine_path: str, language: str, voice_enabled: bool, use_g
     else:
         mcp_args = ["chess-uci-mcp", engine_path]
 
-    mcp_servers = {
+    mcp_servers: dict[str, McpServerConfig] = {
         # External: chess engine via chess-uci-mcp
         "chess": {
             "type": "stdio",
             "command": "uvx",
             "args": mcp_args,
         },
-        # Internal: board state via python-chess
+        # Internal: board state via esca
         "plaza": create_board_mcp_server(),
     }
 
@@ -313,9 +312,8 @@ async def _dialog_phase(client: ClaudeSDKClient, hustler: Hustler, voice_enabled
 
             new_intent = response.get("player_intent", "continue")
             if new_intent in ("leaving_opponent", "leaving_park"):
-                if new_intent == "leaving_park":
-                    return True
-                return False  # Back to park
+                # Leave the park, or go back to it and pick another hustler
+                return new_intent == "leaving_park"
             # else: stay with this hustler
 
 

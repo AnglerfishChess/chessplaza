@@ -5,7 +5,7 @@ AI chess hustlers with distinct personalities. Like NYC Washington Square Park, 
 ## Stack
 - `claude-agent-sdk` - agent framework (query Context7 for docs)
 - `chess-uci-mcp` - UCI engine interface via MCP
-- `python-chess` - board representation and move validation
+- `esca` - board representation and move validation
 
 ## Architecture
 Each hustler = Claude agent with personality prompt + access to chess engine via MCP.
@@ -16,7 +16,7 @@ Each hustler = Claude agent with personality prompt + access to chess engine via
 
 ## Style
 - No local imports (imports inside functions) unless truly necessary
-- Type hints encouraged; prefer `Optional[T]` over `T | None`
+- Type hints encouraged; write optionals as `T | None` (ruff's `UP` rules enforce it)
 
 ## Tests
 
@@ -26,11 +26,15 @@ Structure:
 
 ## Before Committing Milestones
 
-Run both checks:
+Run the full gate:
 ```bash
-uv run ruff check --fix && uv run ruff format
-uv run pytest tests/unit/ -v
+uvx ruff check --fix . && uvx ruff format .
+uvx pyrefly check
+uv run --no-sync pytest
 ```
+
+`pytest` excludes the `llm`-marked tests by default; they need a live Claude
+session. Run them with `uv run --no-sync pytest -m llm`.
 
 ## Output Architecture
 - **Critical errors** → `logger.error`/`logger.critical` → always to stderr (console)

@@ -18,7 +18,6 @@ import os
 import tempfile
 import time
 import wave
-from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -45,7 +44,7 @@ except ImportError:
     exit(1)
 
 # Selected capture device (set during startup)
-selected_capture_device: Optional[dict] = None
+selected_capture_device: dict | None = None
 
 
 def list_audio_devices() -> tuple[list[dict], list[dict]]:
@@ -54,7 +53,7 @@ def list_audio_devices() -> tuple[list[dict], list[dict]]:
     return devices.get_captures(), devices.get_playbacks()
 
 
-def select_capture_device() -> Optional[dict]:
+def select_capture_device() -> dict | None:
     """Let user select a capture device. Returns device dict or None for default."""
     captures, playbacks = list_audio_devices()
 

@@ -8,10 +8,49 @@ Tests rich-as-common-layer approach:
 """
 
 import time
+from typing import Any
 
-import chess
-import chess.svg
+import esca
 from rich.console import Console
+
+START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+# FEN letters to their chess glyphs; uppercase is White.
+GLYPHS = {
+    "K": "\u2654",
+    "Q": "\u2655",
+    "R": "\u2656",
+    "B": "\u2657",
+    "N": "\u2658",
+    "P": "\u2659",
+    "k": "\u265a",
+    "q": "\u265b",
+    "r": "\u265c",
+    "b": "\u265d",
+    "n": "\u265e",
+    "p": "\u265f",
+}
+
+SQUARE = 50  # pixels
+
+
+def _board_svg(fen: str) -> bytes:
+    """The position as an SVG board, White at the bottom."""
+    position = esca.Position.from_fen(fen)
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {8 * SQUARE} {8 * SQUARE}">']
+    for rank in range(8, 0, -1):
+        for file_index, file_letter in enumerate("abcdefgh"):
+            x, y = file_index * SQUARE, (8 - rank) * SQUARE
+            shade = "#f0d9b5" if (file_index + rank) % 2 else "#b58863"
+            parts.append(f'<rect x="{x}" y="{y}" width="{SQUARE}" height="{SQUARE}" fill="{shade}"/>')
+            piece = position.piece_at(f"{file_letter}{rank}")
+            if piece:
+                parts.append(
+                    f'<text x="{x + SQUARE // 2}" y="{y + SQUARE // 2}" font-size="{SQUARE - 8}" '
+                    f'text-anchor="middle" dominant-baseline="central">{GLYPHS[piece]}</text>'
+                )
+    parts.append("</svg>")
+    return "".join(parts).encode("utf-8")
 
 
 # Sample chat data for demonstration
@@ -48,6 +87,13 @@ class RichOutput:
     In GUI mode: records output, exports as HTML, appends to widget.
     """
 
+    # Qt objects, only built in GUI mode
+    app: Any = None
+    window: Any = None
+    chat_display: Any = None
+    chess_widget: Any = None
+    input_field: Any = None
+
     def __init__(self, gui_mode: bool = False):
         self.gui_mode = gui_mode
 
@@ -58,27 +104,25 @@ class RichOutput:
         else:
             # Normal console output
             self.console = Console()
-            self.app = None
-            self.chat_display = None
 
     def _setup_gui(self):
         """Set up PySide6 GUI."""
         try:
+            from PySide6.QtCore import Qt
+            from PySide6.QtGui import QFont
+            from PySide6.QtSvgWidgets import QSvgWidget
             from PySide6.QtWidgets import (
                 QApplication,
-                QMainWindow,
-                QWidget,
-                QVBoxLayout,
                 QHBoxLayout,
-                QTextBrowser,
                 QLineEdit,
+                QMainWindow,
                 QSplitter,
+                QTextBrowser,
+                QVBoxLayout,
+                QWidget,
             )
-            from PySide6.QtCore import Qt
-            from PySide6.QtSvgWidgets import QSvgWidget
-            from PySide6.QtGui import QFont
-        except ImportError:
-            raise ImportError("PySide6 not installed. Install with: uv pip install -e '.[gui]'")
+        except ImportError as exc:
+            raise ImportError("PySide6 not installed. Install with: uv sync --extra gui") from exc
 
         self.app = QApplication([])
         self.window = QMainWindow()
@@ -205,9 +249,7 @@ class RichOutput:
     def display_chess_position(self, fen: str):
         """Display chess position (GUI only)."""
         if self.gui_mode and self.chess_widget:
-            board = chess.Board(fen)
-            svg_data = chess.svg.board(board).encode("utf-8")
-            self.chess_widget.load(svg_data)
+            self.chess_widget.load(_board_svg(fen))
 
 
 def run_prototype(gui: bool = False) -> None:
@@ -216,7 +258,7 @@ def run_prototype(gui: bool = False) -> None:
 
     if gui:
         output.window.show()
-        output.display_chess_position(chess.STARTING_FEN)
+        output.display_chess_position(START_FEN)
 
     # Header
     output.print_system("=== Rich-as-Common-Layer Prototype ===", bold=True)

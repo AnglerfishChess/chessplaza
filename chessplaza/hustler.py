@@ -270,7 +270,7 @@ def get_unified_game_prompt(language: str = "English", park_time: dict[str, str]
     """
     hustler_profiles = "\n\n".join(f"--- {h.name} (id: {h.id}) ---\n{h.prompt}" for h in HUSTLERS.values())
     hustler_ids = "|".join(HUSTLERS.keys())
-    approach_actions = "|".join(f"approach_{h_id}" for h_id in HUSTLERS.keys())
+    approach_actions = "|".join(f"approach_{h_id}" for h_id in HUSTLERS)
 
     # Generate engine options for each hustler
     def format_options(opts: dict[str, str]) -> str:
@@ -341,7 +341,7 @@ player_intent meanings:
 
 === CHESS GAMEPLAY ===
 You have access to TWO MCP tool sets:
-- mcp__plaza__* : Board state (python-chess) - validation, FEN, game status
+- mcp__plaza__* : Board state (esca) - validation, FEN, game status, opening name
 - mcp__chess__* : Engine (UCI) - best move calculation, analysis
 
 GAME LIFECYCLE:

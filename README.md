@@ -1,5 +1,11 @@
 # chessplaza
 
+[![PyPI](https://img.shields.io/pypi/v/chessplaza)](https://pypi.org/project/chessplaza/)
+[![Python](https://img.shields.io/pypi/pyversions/chessplaza)](https://pypi.org/project/chessplaza/)
+[![CI](https://github.com/AnglerfishChess/chessplaza/actions/workflows/ci.yml/badge.svg)](https://github.com/AnglerfishChess/chessplaza/actions/workflows/ci.yml)
+[![Publish](https://github.com/AnglerfishChess/chessplaza/actions/workflows/publish.yml/badge.svg)](https://github.com/AnglerfishChess/chessplaza/actions/workflows/publish.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 A virtual chess plaza with AI-powered chess hustlers, each with their own unique personality and playing style.
 
 Think of Washington Square Park in NYC, or Dupont Circle in DC (but not any specific, exact place!) – places where chess hustlers gather to play, banter, and challenge passersby. This project brings that experience to your terminal, powered by LLMs.
@@ -52,10 +58,8 @@ Options (work with any launch method):
 ```bash
 git clone https://github.com/AnglerfishChess/chessplaza.git
 cd chessplaza
-uv venv --python python3.10
-source .venv/bin/activate
-uv pip install -e ".[dev,voice]"
-chessplaza /usr/local/bin/stockfish
+uv sync --extra voice
+uv run chessplaza /usr/local/bin/stockfish
 ```
 
 ### Building Redistributables
@@ -91,3 +95,4 @@ tccutil reset Microphone com.googlecode.iterm2
 ## Related Projects
 
 - [chess-uci-mcp](https://github.com/AnglerfishChess/chess-uci-mcp) - MCP bridge to UCI chess engines
+- [esca](https://github.com/AnglerfishChess/esca) - the MIT-licensed Rust/Python chess library: rules, position facts, PGN, opening books and names
