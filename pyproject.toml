@@ -1,7 +1,7 @@
 [project]
 name = "chessplaza"
 version = "0.1.0"
-description = "Chess hustler plaza - AI chess hustlers with distinct personalities powered by Claude Agents SDK"
+description = "A virtual chess plaza: AI chess hustlers with distinct personalities, played by Claude agents over any UCI engine, in your terminal."
 authors = [
     {name = "Alex Myodov", email = "amyodov@gmail.com"}
 ]

@@ -6,7 +6,9 @@
 [![Publish](https://github.com/AnglerfishChess/chessplaza/actions/workflows/publish.yml/badge.svg)](https://github.com/AnglerfishChess/chessplaza/actions/workflows/publish.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-A virtual chess plaza with AI-powered chess hustlers, each with their own unique personality and playing style.
+*A park, a few benches, a pond, and some deep-sea creature that has learned chess from listening to trash talk.*
+
+A virtual chess plaza: AI chess hustlers with distinct personalities, played by Claude agents over any UCI engine, in your terminal.
 
 Think of Washington Square Park in NYC, or Dupont Circle in DC (but not any specific, exact place!) – places where chess hustlers gather to play, banter, and challenge passersby. This project brings that experience to your terminal, powered by LLMs.
 
