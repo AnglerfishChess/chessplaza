@@ -1,0 +1,35 @@
+# Runs when a GitHub release is published. Uploads via PyPI trusted publishing
+# (OIDC) for AnglerfishChess/chessplaza, environment `pypi`; no token.
+name: Publish
+
+on:
+  release:
+    types: [published]
+  # Dry run: proves the build. PyPI has no dry-run upload, so this only builds.
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv build
+
+      - name: Verify built version matches release tag
+        if: github.event_name == 'release'
+        run: |
+          want="${GITHUB_REF_NAME#v}"
+          got="$(basename dist/*.tar.gz .tar.gz | sed -E 's/^chessplaza-//')"
+          if [ "$got" != "$want" ]; then
+            echo "built version $got does not match release tag $want" >&2
+            exit 1
+          fi
+
+      - if: github.event_name == 'release'
+        uses: pypa/gh-action-pypi-publish@release/v1
