@@ -9,7 +9,7 @@ class TestEloToSkillLevel:
     """Tests for _elo_to_skill_level conversion."""
 
     @pytest.mark.parametrize(
-        "elo,expected_skill",
+        ("elo", "expected_skill"),
         [
             (1000, 0),  # Minimum ELO -> skill 0
             (1090, 1),  # Just above threshold

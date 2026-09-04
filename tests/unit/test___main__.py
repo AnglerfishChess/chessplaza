@@ -11,7 +11,7 @@ class TestGetParkTime:
     """Tests for _get_park_time function."""
 
     @pytest.mark.parametrize(
-        "hour,expected_time_of_day",
+        ("hour", "expected_time_of_day"),
         [
             # Night hours clamped to late evening
             (0, "late evening"),

@@ -4,15 +4,13 @@ These tests use Claude to evaluate that AI-generated responses
 stay in character. Skip with: pytest -m 'not llm'
 """
 
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 from claude_agent_sdk import ResultMessage
-
 from pytest_claude_agent_sdk import SpyClaudeSDKClient
 
 from chessplaza.hustler import FAST_EDDIE, VIKTOR, Hustler
-
 
 # Test cases: (hustler, scenario, judge_question, expected_answer)
 PERSONALITY_CASES = [
@@ -50,7 +48,7 @@ class TestHustlerPersonalities:
     """Test that hustler prompts produce appropriate personality responses."""
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("hustler,scenario,judge_q,expected", PERSONALITY_CASES)
+    @pytest.mark.parametrize(("hustler", "scenario", "judge_q", "expected"), PERSONALITY_CASES)
     async def test_hustler_in_character(
         self,
         hustler: Hustler,
