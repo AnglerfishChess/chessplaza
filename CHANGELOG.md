@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 (2026-09-04)
 
 - Chess hustlers with distinct personalities, driven by the Claude Agent SDK:
   a park scene to pick an opponent from, and a dialog loop with the one chosen.

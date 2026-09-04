@@ -12,7 +12,7 @@ Think of Washington Square Park in NYC, or Dupont Circle in DC (but not any spec
 
 ## Roadmap
 
-**Phase 1: Claude Agents epoch**
+**Phase 1: Claude Agents epoch** (shipped in 0.1.0)
 - Chess hustler personas powered by Claude Agents SDK;
 - Integration with UCI chess engines via [chess-uci-mcp](https://github.com/AnglerfishChess/chess-uci-mcp);
 - Different hustler personalities: the trash-talker, the philosopher, the speed demon, the old master...
