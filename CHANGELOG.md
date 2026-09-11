@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 (2026-09-11)
+
+- The board runs on `esca` 0.4.0. Nothing the player or the hustlers see
+  changes.
+
 ## 0.1.0 (2026-09-04)
 
 - Chess hustlers with distinct personalities, driven by the Claude Agent SDK:
