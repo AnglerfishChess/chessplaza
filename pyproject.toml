@@ -33,7 +33,7 @@ requires-python = ">=3.12"
 dependencies = [
     "claude-agent-sdk>=0.2.152",
     "click>=8.1.8,<9.0.0",
-    "esca>=0.3,<0.4",
+    "esca~=0.4.0",
     "python-dotenv>=1.0.0",
     "rich>=13.0.0",
 ]

@@ -42,7 +42,7 @@ def _game_status() -> str:
 
 def _turn() -> str:
     """Side to move, as `white` or `black`."""
-    return "white" if _game.position.side_to_move == "w" else "black"
+    return _game.position.side_to_move
 
 
 def _opening_name() -> str | None:
@@ -57,15 +57,13 @@ def _resolve(text: str) -> tuple[esca.Move | None, str]:
     Exactly one of the pair is meaningful: a move and an empty reason, or
     `None` and a reason naming what each notation made of the text.
     """
+    position = _game.position
     reasons: list[str] = []
-    for play in (esca.Game.play_san, esca.Game.play):
-        probe = esca.Game.from_position(_game.position)
+    for parse in (position.parse_san, position.parse_uci):
         try:
-            play(probe, text)
-        except ValueError as exc:
+            return parse(text, variant=_game.variant), ""
+        except esca.MoveParseError as exc:
             reasons.append(str(exc))
-        else:
-            return probe.moves[-1], ""
     return None, " / ".join(dict.fromkeys(reasons))
 
 
@@ -94,7 +92,7 @@ async def make_move(args: dict[str, Any]) -> dict[str, Any]:
         return _reply(
             {
                 "valid": False,
-                "error": f"{reason}: {move_input}",
+                "error": reason,
                 "fen": _game.position.fen,
                 "game_status": _game_status(),
             }

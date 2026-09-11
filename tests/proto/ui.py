@@ -39,16 +39,19 @@ def _board_svg(fen: str) -> bytes:
     position = esca.Position.from_fen(fen)
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {8 * SQUARE} {8 * SQUARE}">']
     for rank in range(8, 0, -1):
-        for file_index, file_letter in enumerate("abcdefgh"):
+        for file_index in range(8):
             x, y = file_index * SQUARE, (8 - rank) * SQUARE
             shade = "#f0d9b5" if (file_index + rank) % 2 else "#b58863"
             parts.append(f'<rect x="{x}" y="{y}" width="{SQUARE}" height="{SQUARE}" fill="{shade}"/>')
-            piece = position.piece_at(f"{file_letter}{rank}")
-            if piece:
-                parts.append(
-                    f'<text x="{x + SQUARE // 2}" y="{y + SQUARE // 2}" font-size="{SQUARE - 8}" '
-                    f'text-anchor="middle" dominant-baseline="central">{GLYPHS[piece]}</text>'
-                )
+    for square in position.occupied:
+        piece = position.piece_at(square)
+        if piece:
+            x = (ord(square[0]) - ord("a")) * SQUARE
+            y = (8 - int(square[1])) * SQUARE
+            parts.append(
+                f'<text x="{x + SQUARE // 2}" y="{y + SQUARE // 2}" font-size="{SQUARE - 8}" '
+                f'text-anchor="middle" dominant-baseline="central">{GLYPHS[piece]}</text>'
+            )
     parts.append("</svg>")
     return "".join(parts).encode("utf-8")
 
